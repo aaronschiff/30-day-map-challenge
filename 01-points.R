@@ -56,7 +56,7 @@ downtown_akl_radius <- st_buffer(x = downtown_akl_point, dist = 10000)   # 10km 
 plot_dat <- st_intersection(x = downtown_akl_radius, y = dat)
 
 plot_map <- ggplot(plot_dat, aes(colour = address_nu)) + 
-  geom_sf(size = 0.1) + 
+  geom_sf(size = 0.5, stroke = 0) + 
   scale_colour_viridis(guide = "none") + 
   theme_void()
 
