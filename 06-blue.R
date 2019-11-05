@@ -65,8 +65,12 @@ map <- ggplot(top_lakes_recentred) +
   geom_sf(fill = "blue", 
           linetype = "blank") + 
   facet_wrap(facets = vars(fct_reorder(name, -area)), 
-             ncol = 3) + 
-  theme_void()
+             ncol = 3, 
+             labeller = label_wrap_gen(width = 16)) + 
+  theme_void() + 
+  theme(plot.margin = margin(1, 0, 0, 0, "cm"), 
+        panel.spacing.x = unit(2, "cm"), 
+        panel.spacing.y = unit(1, "cm"))
 
 ggsave(filename = here("outputs/06-blue.png"), 
        plot = map, 
