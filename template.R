@@ -17,7 +17,6 @@ library(tidyverse)
 library(janitor)
 library(sf)
 library(glue)
-library(ggthemes)
 
 conflict_prefer("filter", "dplyr")
 
