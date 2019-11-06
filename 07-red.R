@@ -98,4 +98,44 @@ ggsave(filename = here("outputs/07-red.png"),
        height = 25, 
        units = "cm")
 
+# Zoom in of isthmus
+bbox_size <- 10000   # Metres
+
+bbox <- st_point(x = c(174.775804, -36.882521), dim = "XY") %>%
+  st_sfc(crs = 4326) %>%
+  st_as_sf() %>%
+  st_transform(crs = 2193) %>%
+  st_bbox()
+
+bbox["xmin"] <- bbox["xmin"] - bbox_size
+bbox["xmax"] <- bbox["xmax"] + bbox_size
+bbox["ymin"] <- bbox["ymin"] - bbox_size
+bbox["ymax"] <- bbox["ymax"] + bbox_size
+
+map2 <- ggplot() + 
+  geom_point(aes(x = X, y = Y), 
+             colour = "red", 
+             size = 0.4, 
+             shape = 16, 
+             stroke = 0, 
+             data = dots) + 
+  geom_sf(colour = grey(0.5), 
+          fill = NA, 
+          size = 0.1, 
+          data = st_geometry(pop_changes_dat_sa2)) + 
+  theme_void() + 
+  theme(plot.background = element_rect(fill = "white"), 
+        plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm")) + 
+  scale_x_continuous(expand = expand_scale(0, 0), 
+                     limits = c(bbox["xmin"], bbox["xmax"])) + 
+  scale_y_continuous(expand = expand_scale(0, 0), 
+                     limits = c(bbox["ymin"], bbox["ymax"]))
+
+ggsave(filename = here("outputs/07-red-2.png"), 
+       plot = map2, 
+       device = "png", 
+       width = 20, 
+       height = 20, 
+       units = "cm")
+
 # *****************************************************************************
