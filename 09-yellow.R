@@ -19,6 +19,7 @@ library(sf)
 library(glue)
 library(rvest)
 library(biogeo)
+library(rnaturalearth)
 
 conflict_prefer("filter", "dplyr")
 
@@ -61,6 +62,9 @@ parse_lighthouse <- function(x) {
 parsed_lighthouses <- map_dfr(.x = lighthouses[3:length(lighthouses)], 
                               .f = parse_lighthouse)
 
+world <- ne_countries(returnclass = "sf") %>%
+  st_transform(54016)
+
 # *****************************************************************************
 
 
@@ -85,21 +89,26 @@ map_lighthouses <- parsed_lighthouses %>%
   st_transform(crs = 54016)
 
 # Plot map
-map <- ggplot(map_lighthouses) + 
-  geom_sf(colour = rgb(1, 1, 0, 0.3), 
+map <- ggplot() + 
+  geom_sf(data = world, 
+          fill = "black", 
+          colour = "black", 
+          size = 0.1) + 
+  geom_sf(data = map_lighthouses, 
+          colour = rgb(1, 1, 0, 0.4), 
           stroke = 0, 
-          size = 0.3) + 
+          size = 0.35) + 
   theme_void() + 
-  theme(plot.background = element_rect(fill = "black"), 
-        plot.margin = margin(1, 1, 1, 1, "cm")) + 
-  scale_x_continuous(expand = expand_scale(0, 0)) + 
+  theme(plot.background = element_rect(fill = grey(0.05)), 
+        plot.margin = margin(0, 0.1, 0, 0.1, "cm")) + 
+  scale_x_continuous(expand = expand_scale(0, 0)) +
   scale_y_continuous(expand = expand_scale(0, 0))
 
 ggsave(filename = here("outputs/09-yellow.png"), 
        plot = map, 
        device = "png", 
        width = 20, 
-       height = 12, 
+       height = 15, 
        units = "cm")
 
 # *****************************************************************************
