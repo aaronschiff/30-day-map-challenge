@@ -95,9 +95,9 @@ map <- ggplot() +
           colour = "black", 
           size = 0.1) + 
   geom_sf(data = map_lighthouses, 
-          colour = rgb(1, 1, 0, 0.4), 
+          colour = rgb(1, 1, 0, 0.5), 
           stroke = 0, 
-          size = 0.35) + 
+          size = 0.4) + 
   theme_void() + 
   theme(plot.background = element_rect(fill = grey(0.05)), 
         plot.margin = margin(0, 0.1, 0, 0.1, "cm")) + 
