@@ -35,7 +35,7 @@ conflict_prefer("filter", "dplyr")
 
 airports <- read_sf(here("data/nz-airport-polygons-topo-150k/nz-airport-polygons-topo-150k.shp")) %>%
   filter(!is.na(name)) %>%
-  filter(!str_detect(name, "Aerodrome"))
+  filter(str_detect(name, "Airport"))
 
 runways <- read_sf(here("data/nz-runway-polygons-topo-150k/nz-runway-polygons-topo-150k.shp"))
 
@@ -111,16 +111,19 @@ buildings_x_airports_recentred <- buildings_x_airports_recentred %>%
 
 # Tidy up airport names
 airports_recentred <- airports_recentred %>%
+  mutate(name = ifelse(name == "Woodbourne Aerodrome/Blenheim Airport", "Woodbourne / Blenheim Airport", name)) %>%
   mutate(name = str_replace(name, "Airport", "")) %>%
   mutate(name = str_trim(name)) %>%
   mutate(name = fct_reorder(name, -airport_northing))
 
 runways_x_airports_recentred <- runways_x_airports_recentred %>%
+  mutate(name = ifelse(name == "Woodbourne Aerodrome/Blenheim Airport", "Woodbourne / Blenheim Airport", name)) %>%
   mutate(name = str_replace(name, "Airport", "")) %>%
   mutate(name = str_trim(name)) %>%
   mutate(name = fct_reorder(name, -airport_northing))
 
 buildings_x_airports_recentred <- buildings_x_airports_recentred %>%
+  mutate(name = ifelse(name == "Woodbourne Aerodrome/Blenheim Airport", "Woodbourne / Blenheim Airport", name)) %>%
   mutate(name = str_replace(name, "Airport", "")) %>%
   mutate(name = str_trim(name)) %>%
   mutate(name = fct_reorder(name, -airport_northing))
