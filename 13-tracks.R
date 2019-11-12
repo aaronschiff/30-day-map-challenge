@@ -33,13 +33,43 @@ conflict_prefer("here", "here")
 # *****************************************************************************
 # Load data -------------------------------------------------------------------
 
+# South Pacific storms
 storms <- read_sf("data/IBTrACS/IBTrACS.SP.list.v04r00.lines.shp") %>%
   clean_names() %>%
   mutate(iso_time = ymd_hms(iso_time)) %>%
   st_transform(crs = 3832)   # PDC Mercator -- for Pacific 
 
+# World map
 world <- ne_countries(scale = "medium", returnclass = "sf") %>%
   st_transform(crs = 3832)
+
+# Tidy up storms wind speeds for mapping
+storms_since_1980 <- storms %>%
+  filter(track_type == "main", year(iso_time) > 1979)
+
+mean_wmo_wind <- mean(storms_since_1980$wmo_wind, na.rm = TRUE)
+
+storms_since_1980_missing_wind <- storms_since_1980 %>%
+  st_drop_geometry() %>%
+  mutate(wind_obs = ifelse(!is.na(wmo_wind), 1, 0)) %>%
+  group_by(sid) %>%
+  summarise(wind_obs = sum(wind_obs)) %>%
+  ungroup() %>%
+  filter(wind_obs < 2)
+
+storms_since_1980_interpolated_wind <- storms_since_1980 %>%
+  mutate(wmo_wind_interp = ifelse(sid %in% storms_since_1980_missing_wind$sid, 
+                                  mean_wmo_wind, 
+                                  wmo_wind)) %>%
+  group_by(sid) %>%
+  mutate(wmo_wind_interp = approx(x = iso_time, 
+                                  y = wmo_wind_interp, 
+                                  xout = iso_time, 
+                                  rule = 2)$y) %>%
+  mutate(wmo_wind_max = max(wmo_wind_interp, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(decade = as.integer(floor(year(iso_time) / 10) * 10)) %>%
+  mutate(sid2 = fct_reorder(sid, wmo_wind_max))
 
 # *****************************************************************************
 
@@ -47,37 +77,14 @@ world <- ne_countries(scale = "medium", returnclass = "sf") %>%
 # *****************************************************************************
 # Make the map ----------------------------------------------------------------
 
-# Storms by decade since 1980, with at least two wmo_wind observations
-selected_sid <- storms %>%
-  st_drop_geometry() %>%
-  filter(track_type == "main", 
-         year(iso_time) > 1979, 
-         !is.na(wmo_wind)) %>%
-  count(sid) %>%
-  filter(n > 1) %>%
-  pull(sid)
-
-# Interpolate missing values in wmo_wind
-map_dat <- storms %>%
-  filter(track_type == "main", 
-         sid %in% selected_sid) %>%
-  mutate(decade = as.integer(floor(year(iso_time) / 10) * 10)) %>%
-  group_by(sid) %>%
-  mutate(wmo_wind_interp = approx(x = iso_time, 
-                                  y = wmo_wind, 
-                                  xout = iso_time, 
-                                  rule = 2)$y) %>%
-  ungroup()
-
-# Make the map
 bbox = st_bbox(map_dat)
 
 map <- ggplot() + 
   geom_sf(data = world, 
           fill = grey(0.1), 
           linetype = "blank") + 
-  geom_sf(data = map_dat, 
-          mapping = aes(colour = wmo_wind_interp), 
+  geom_sf(data = storms_since_1980_interpolated_wind, 
+          mapping = aes(colour = wmo_wind_interp, group = sid2), 
           size = 0.3, 
           alpha = 0.75) + 
   facet_wrap(facets = vars(decade), 
@@ -96,8 +103,8 @@ map <- ggplot() +
                                   margin = margin(0, 0, 0.5, 0, "cm"))) + 
   scale_x_continuous(expand = expand_scale(0, 0)) + 
   scale_y_continuous(expand = expand_scale(0, 0)) + 
-  scale_colour_gradient(low = "midnightblue", 
-                        high = "deepskyblue1", 
+  scale_colour_gradient(low = "midnightblue",
+                        high = "deepskyblue1",
                         guide = "none")
 
 ggsave(filename = here("outputs/13-tracks.png"), 
