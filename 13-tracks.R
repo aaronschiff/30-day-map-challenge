@@ -69,7 +69,7 @@ map_dat <- storms %>%
                                   rule = 2)$y) %>%
   ungroup()
 
-# Crop world map
+# Make the map
 bbox = st_bbox(map_dat)
 
 map <- ggplot() + 
