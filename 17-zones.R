@@ -66,8 +66,8 @@ bbox <- bboxes %>%
 aspect <- (bbox[[1, "ymax"]] - bbox[[1, "ymin"]]) / 
   (bbox[[1, "xmax"]] - bbox[[1, "xmin"]])
 
-# Plot using base graphics because I'm not sure now to plot all the shapefiles
-# using ggplot. 
+# Plot using base graphics because I'm not sure how to plot all the shapefiles
+# using ggplot without tediously defining a geom_sf for each layer.
 
 png(filename = here("outputs/17-zones.png"), 
     width = 2000, 
