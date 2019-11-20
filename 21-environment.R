@@ -26,7 +26,7 @@ library(sf)
 library(glue)
 library(parallel)
 library(readxl)
-library(conca)
+library(concaveman)
 
 conflict_prefer("filter", "dplyr")
 
